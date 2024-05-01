@@ -1,3 +1,6 @@
+use core;
+
 fn main() {
-    println!("Hello, world!");
+    let result = core::add(1, 2);
+    println!("Hello, world! {}", result);
 }
