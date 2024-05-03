@@ -1,25 +1,24 @@
 use std::{fmt, io};
 
 #[derive(Debug)]
-pub enum UserValidationError {
+pub enum CustomUserValidationError {
     InvalidEmail,
     InvalidName,
     Unknown(io::Error),
 }
 
-
-impl fmt::Display for UserValidationError {
+impl fmt::Display for CustomUserValidationError {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         match self {
-            UserValidationError::InvalidEmail => write!(f, "Invalid email"),
-            UserValidationError::InvalidName => write!(f, "Invalid name"),
-            UserValidationError::Unknown(error) => write!(f, "Unknown error {:?}", error),
+            CustomUserValidationError::InvalidEmail => write!(f, "Invalid email"),
+            CustomUserValidationError::InvalidName => write!(f, "Invalid name"),
+            CustomUserValidationError::Unknown(error) => write!(f, "Unknown error {:?}", error),
         }
     }
 }
 
-impl From<io::Error> for UserValidationError {
+impl From<io::Error> for CustomUserValidationError {
     fn from(error: io::Error) -> Self {
-        UserValidationError::Unknown(error)
+        CustomUserValidationError::Unknown(error)
     }
 }
