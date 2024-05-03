@@ -1,9 +1,9 @@
 use core::Error;
 
-#[derive(Error)]
+#[derive(Error, Debug)]
 pub enum ThisErrorUserValidationError {
-    #[error("Invalid username: {0}")]
-    InvalidUsername,
-    #[error("Invalid password: {0}")]
-    InvalidPassword,
+    #[error("Invalid email")]
+    InvalidEmail,
+    #[error("Invalid name")]
+    InvalidName,
 }

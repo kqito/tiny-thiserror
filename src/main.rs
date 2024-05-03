@@ -8,7 +8,7 @@ mod thiserror_impl_error;
 
 fn main() {
     println!(
-        "{:?} {:?} {:?}",
+        "custom implement error \n {:?} \n {:?} \n {:?}",
         CustomUserValidationError::InvalidEmail,
         CustomUserValidationError::InvalidName,
         CustomUserValidationError::from(std::io::Error::new(
@@ -18,12 +18,8 @@ fn main() {
     );
 
     println!(
-        "{:?} {:?} {:?}",
+        "thiserror implement error \n {:?} \n {:?}",
         ThisErrorUserValidationError::InvalidEmail,
         ThisErrorUserValidationError::InvalidName,
-        ThisErrorUserValidationError::from(std::io::Error::new(
-            std::io::ErrorKind::Other,
-            "Some error"
-        )),
     );
 }

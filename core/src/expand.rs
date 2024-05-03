@@ -1,8 +1,9 @@
 extern crate proc_macro;
 extern crate syn;
 
+use crate::ast::{Enum, Input, Struct};
 use proc_macro2::TokenStream;
-use syn::{Data, DataEnum, DataStruct, DeriveInput, Result};
+use syn::{DeriveInput, Result};
 
 pub fn expand(input: &DeriveInput) -> TokenStream {
     match try_expand(input) {
@@ -11,17 +12,13 @@ pub fn expand(input: &DeriveInput) -> TokenStream {
     }
 }
 
-fn try_expand(input: &DeriveInput) -> Result<TokenStream> {
-    let input = input.clone();
+fn try_expand(derive_input: &DeriveInput) -> Result<TokenStream> {
+    let input = Input::try_from(derive_input.clone())
+        .map_err(|_| syn::Error::new_spanned(derive_input, "Unsupported type"))?;
 
-    match input.data {
-        Data::Enum(data) => Ok(parse_enum(data)),
-        Data::Struct(data) => Ok(parse_struct(data)),
-        // Nothing else
-        _ => Err(syn::Error::new_spanned(
-            input,
-            "Only enums and structs are supported for #[derive(Error)]",
-        )),
+    match input {
+        Input::Enum(e) => Ok(parse_enum(e)),
+        Input::Struct(s) => Ok(parse_struct(s)),
     }
 }
 
@@ -35,10 +32,26 @@ fn fallback(input: &DeriveInput) -> TokenStream {
     expanded
 }
 
-fn parse_enum(input: DataEnum) -> TokenStream {
-    todo!()
+fn parse_enum(input: Enum) -> TokenStream {
+    let name = input.ident;
+    let arms = input.variants.iter().map(|variant| {
+        let ident = &variant.ident;
+        quote! {
+            Self::#ident => std::fmt::Display::fmt("TODO", f),
+        }
+    });
+
+    quote! {
+        impl std::fmt::Display for #name {
+            fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
+                match self {
+                    #(#arms)*
+                }
+            }
+        }
+    }
 }
 
-fn parse_struct(input: DataStruct) -> TokenStream {
+fn parse_struct(input: Struct) -> TokenStream {
     todo!()
 }

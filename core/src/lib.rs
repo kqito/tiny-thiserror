@@ -4,6 +4,7 @@ extern crate syn;
 extern crate quote;
 
 mod expand;
+mod ast;
 
 use expand::expand;
 use proc_macro::TokenStream;
