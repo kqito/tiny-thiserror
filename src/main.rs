@@ -1,6 +1,13 @@
-use core;
+mod custom_impl_error;
 
 fn main() {
-    let result = core::add(1, 2);
-    println!("Hello, world! {}", result);
+    println!(
+        "{:?} {:?} {:?}",
+        custom_impl_error::UserValidationError::InvalidEmail,
+        custom_impl_error::UserValidationError::InvalidName,
+        custom_impl_error::UserValidationError::from(std::io::Error::new(
+            std::io::ErrorKind::Other,
+            "Some error"
+        )),
+    );
 }
