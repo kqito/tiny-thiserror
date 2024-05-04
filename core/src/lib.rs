@@ -3,8 +3,9 @@ extern crate syn;
 #[macro_use]
 extern crate quote;
 
-mod expand;
 mod ast;
+mod attr;
+mod expand;
 
 use expand::expand;
 use proc_macro::TokenStream;
