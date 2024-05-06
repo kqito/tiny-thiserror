@@ -8,6 +8,9 @@ pub enum ErrorAttr {
     InvalidEmail(String),
     #[error("Invalid name {0} {1}")]
     InvalidName(String, String),
+    // Unused fields
+    #[error("Invalid birth")]
+    InvalidBirth(u8, u8, u8),
 }
 
 #[test]
@@ -23,6 +26,9 @@ fn test_error_attr() {
         ErrorAttr::InvalidName("a".to_string(), "b".to_string())
     );
     assert_eq!(test, "Invalid name a b");
+
+    let test = format!("{}", ErrorAttr::InvalidBirth(1, 2, 3));
+    assert_eq!(test, "Invalid birth");
 }
 
 #[derive(Error, Debug)]
