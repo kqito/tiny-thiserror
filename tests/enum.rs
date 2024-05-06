@@ -1,34 +1,45 @@
 use core::Error;
 
+fn assert(test: impl std::fmt::Display, expect: &str) {
+    assert_eq!(format!("{}", test), expect);
+}
+
 #[derive(Error, Debug)]
 pub enum ErrorAttr {
     #[error("Unknown error")]
     Unknown,
+    #[error("Invalid birth {0}/{1}/{2}")]
+    InvalidBirth(u16, u8, u8),
+    #[error("Invalid name {first} {last}")]
+    InvalidName {
+        first: String,
+        _middle: String,
+        last: String,
+    },
+    // Unused fields
     #[error("Invalid email {0}")]
     InvalidEmail(String),
-    #[error("Invalid name {0} {1}")]
-    InvalidName(String, String),
-    // Unused fields
-    #[error("Invalid birth")]
-    InvalidBirth(u8, u8, u8),
 }
 
 #[test]
 fn test_error_attr() {
-    let test = format!("{}", ErrorAttr::Unknown);
-    assert_eq!(test, "Unknown error");
-
-    let test = format!("{}", ErrorAttr::InvalidEmail("test".to_string()));
-    assert_eq!(test, "Invalid email test");
-
-    let test = format!(
-        "{}",
-        ErrorAttr::InvalidName("a".to_string(), "b".to_string())
+    assert(ErrorAttr::Unknown, "Unknown error");
+    assert(
+        ErrorAttr::InvalidEmail("test".to_string()),
+        "Invalid email test",
     );
-    assert_eq!(test, "Invalid name a b");
-
-    let test = format!("{}", ErrorAttr::InvalidBirth(1, 2, 3));
-    assert_eq!(test, "Invalid birth");
+    assert(
+        ErrorAttr::InvalidName {
+            first: "John".to_string(),
+            _middle: "Smith".to_string(),
+            last: "Doe".to_string(),
+        },
+        "Invalid name John Doe",
+    );
+    assert(
+        ErrorAttr::InvalidBirth(2000, 7, 4),
+        "Invalid birth 2000/7/4",
+    );
 }
 
 #[derive(Error, Debug)]
@@ -39,9 +50,9 @@ pub enum WithoutErrorAttr {
 
 #[test]
 fn test_without_error_attr() {
-    let test = format!("{}", WithoutErrorAttr::InvalidEmail("test".to_string()));
-    assert_eq!(test, "InvalidEmail(test)");
-
-    let test = format!("{}", WithoutErrorAttr::InvalidName);
-    assert_eq!(test, "InvalidName");
+    assert(
+        WithoutErrorAttr::InvalidEmail("test".to_string()),
+        "InvalidEmail(test)",
+    );
+    assert(WithoutErrorAttr::InvalidName, "InvalidName");
 }

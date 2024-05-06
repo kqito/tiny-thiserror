@@ -24,12 +24,16 @@ pub fn extract_error_formatter(attrs: &[Attribute]) -> Option<Formatter> {
     attrs.iter().find_map(|attr| {
         if attr.path().is_ident("error") {
             let maybe_format = attr.parse_args::<LitStr>().ok().map(|f| f.value());
-            let format = match maybe_format {
+            let original_format = match maybe_format {
                 Some(f) => f,
                 None => return None,
             };
 
-            let dynamic_fields: Vec<DyamicField> = format
+            // e.g. convert `name: {first} {last}` to `name: {} {}` using Reg
+            let reg = regex::Regex::new(r"\{[a-zA-Z0-9_]*\}").unwrap();
+            let format = reg.replace_all(&original_format, "{}").to_string();
+
+            let dynamic_fields: Vec<DyamicField> = original_format
                 .split("{")
                 .skip(1)
                 .map(|field| {
@@ -51,26 +55,4 @@ pub fn extract_error_formatter(attrs: &[Attribute]) -> Option<Formatter> {
         }
         None
     })
-}
-
-#[cfg(test)]
-mod test {
-    #[test]
-    fn test_extract_error_formatter() {
-        let attrs = vec![
-            syn::parse_quote! { #[error("Invalid email {0}")] },
-            syn::parse_quote! { #[error("Invalid name {0} {1}")] },
-            syn::parse_quote! { #[error("Invalid birth")] },
-        ];
-
-        let formatter = formatter.unwrap();
-        assert_eq!(formatter.format, "Invalid email {0}");
-        assert_eq!(dynamic_fields.len(), 1);
-        match &dynamic_fields[0] {
-            super::DyamicField::Unnamed(field) => {
-                assert_eq!(field.ident, 0);
-            }
-            _ => panic!("Invalid dynamic field"),
-        }
-    }
 }

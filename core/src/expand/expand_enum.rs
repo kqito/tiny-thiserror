@@ -1,4 +1,3 @@
-
 extern crate proc_macro;
 extern crate syn;
 use crate::{
@@ -17,6 +16,7 @@ struct ParseContext {
 fn parse_named_fields(fields: &syn::FieldsNamed, context: ParseContext) -> TokenStream {
     let name = context.name;
     let ident = context.ident;
+    let maybe_formatter = context.maybe_formatter;
 
     let field_name = fields
         .named
@@ -24,13 +24,37 @@ fn parse_named_fields(fields: &syn::FieldsNamed, context: ParseContext) -> Token
         .map(|field| field.ident.as_ref().unwrap())
         .map(|ident| format_ident!("{}", ident))
         .collect::<Vec<_>>();
-    quote! {
-        #name::#ident {#(#field_name),*} => {
-            write!(f, "{} {{", stringify!(#ident))?;
-            #(
-                write!(f, "{}: {},", stringify!(#field_name), #field_name)?;
-            )*
-            write!(f, "}}")
+
+    match maybe_formatter {
+        Some(formatter) => {
+            let format = formatter.format;
+            let format_field_name = formatter
+                .dynamic_fields
+                .iter()
+                .map(|field| match field {
+                    DyamicField::Named(named) => {
+                        format_ident!("{}", named.ident)
+                    }
+                    _ => unreachable!(),
+                })
+                .collect::<Vec<_>>();
+
+            quote! {
+                #name::#ident {#(#field_name),*} => {
+                    write!(f, #format, #(#format_field_name),*)
+                }
+            }
+        }
+        None => {
+            quote! {
+                #name::#ident {#(#field_name),*} => {
+                    write!(f, "{} {{", stringify!(#ident))?;
+                    #(
+                        write!(f, "{}: {},", stringify!(#field_name), #field_name)?;
+                    )*
+                    write!(f, "}}")
+                }
+            }
         }
     }
 }
@@ -50,12 +74,10 @@ fn parse_unnamed_fields(fields: &syn::FieldsUnnamed, context: ParseContext) -> T
                 .dynamic_fields
                 .iter()
                 .map(|field| match field {
-                    DyamicField::Named(named) => {
-                        format_ident!("{}", named.ident)
-                    }
                     DyamicField::Unnamed(unnamed) => {
                         format_ident!("{}", field_name[unnamed.ident])
                     }
+                    _ => unreachable!(),
                 })
                 .collect::<Vec<_>>();
             quote! {
