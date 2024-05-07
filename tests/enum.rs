@@ -17,7 +17,7 @@ pub enum ErrorAttr {
         last: String,
     },
     // Unused fields
-    #[error("Invalid email {0}")]
+    #[error("Invalid email")]
     InvalidEmail(String),
 }
 
@@ -25,34 +25,31 @@ pub enum ErrorAttr {
 fn test_error_attr() {
     assert(ErrorAttr::Unknown, "Unknown error");
     assert(
-        ErrorAttr::InvalidEmail("test".to_string()),
-        "Invalid email test",
-    );
-    assert(
-        ErrorAttr::InvalidName {
-            first: "John".to_string(),
-            _middle: "Smith".to_string(),
-            last: "Doe".to_string(),
-        },
-        "Invalid name John Doe",
-    );
-    assert(
         ErrorAttr::InvalidBirth(2000, 7, 4),
         "Invalid birth 2000/7/4",
     );
+    assert(
+        ErrorAttr::InvalidName {
+            first: "First".to_string(),
+            _middle: "Middle".to_string(),
+            last: "Last".to_string(),
+        },
+        "Invalid name First Last",
+    );
+    assert(ErrorAttr::InvalidEmail("test".to_string()), "Invalid email");
 }
 
 #[derive(Error, Debug)]
 pub enum WithoutErrorAttr {
-    InvalidEmail(String),
     InvalidName,
+    InvalidEmail(String),
 }
 
 #[test]
 fn test_without_error_attr() {
+    assert(WithoutErrorAttr::InvalidName, "InvalidName");
     assert(
         WithoutErrorAttr::InvalidEmail("test".to_string()),
         "InvalidEmail(test)",
     );
-    assert(WithoutErrorAttr::InvalidName, "InvalidName");
 }
